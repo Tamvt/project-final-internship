@@ -5,9 +5,10 @@ namespace App\Http\Middleware;
 use App\Models\RoleInProject;
 use Closure;
 
-class checkIsPM
+class checkOwnedSprint
 {
 	private const IS_LEADER = 1;
+	private const IS_PO = 4;
 	private $modelRoleInProjects;
 
 	public function __construct(RoleInProject $roleInProject)
@@ -21,7 +22,7 @@ class checkIsPM
 		$roles = $this->modelRoleInProjects->checkRoleInProject($user_ID);
 		foreach ($roles as $role) {
 			$u_role = $role->project_role_ID;
-			if($u_role == self::IS_LEADER)
+			if($u_role == self::IS_LEADER || $u_role == self::IS_PO)
 				return $next($request);
 		}
 		return response()->json([ 'status'=> 'PERMISSION_DENIED']);

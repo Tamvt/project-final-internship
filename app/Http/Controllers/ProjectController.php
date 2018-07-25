@@ -8,15 +8,18 @@ use App\Exceptions\NotFoundException;
 use App\Http\Controllers\Requests\ApiAddProjectRequest;
 use Illuminate\Http\Request;
 use App\Models\Project;
+use App\Models\RoleInProject;
 use validator;
 
 class ProjectController extends Controller
 {
 	private $modelProjects;
+	private $modelRoleInProjects;
 
-	public function __construct(Project $project)
+	public function __construct(Project $project, RoleInProject $roleInProject)
 	{
 		$this->modelProjects = $project;
+		$this->modelRoleInProjects = $roleInProject;
 	}
 
 	public function addProject(Request $request){
@@ -101,6 +104,7 @@ class ProjectController extends Controller
 		}
 		return response()->json(['error' => 'NOT_FOUND_ERROR']);
 	}
+
 	public function getProject($id){
 		$project = $this->modelProjects->find($id);
 		if (!$project) {
@@ -110,6 +114,28 @@ class ProjectController extends Controller
 		return response()->json([
 			'success' => $success,
 			'data' => $project
+		]);
+	}
+
+	public function getUserProject($id){
+		$project_ID = $this->modelRoleInProjects->getsProjectID($id);
+		$data = array();
+		foreach ($project_ID as $id) {
+			$p_id = $id->project_ID;
+			$projects = $this->modelProjects->getsProjects($p_id);
+			if($projects){
+				foreach ($projects as $project) {
+					array_push($data, $project);
+				}
+			}	
+		}
+		if (!$data) {
+			return response()->json(['error' => 'NOT_FOUND_ERROR']);
+		}
+		$success = true;
+		return response()->json([
+			'success' => $success,
+			'data' => $data
 		]);
 	}
 }
